@@ -6,6 +6,7 @@ import random
 
 
 class QLearning:
+    _unhashable_error_texts = 'The state must be hashable.'
 
     def __init__(self, env, epsilon, gamma, alpha, log_frequency=100):
         """
@@ -44,9 +45,10 @@ class QLearning:
                     reward_sum += reward
 
                     # Update Q Function using TD target.
-                    next_action = np.argmax(self._q_func[next_state])
-                    target = reward + self._gamma * self._q_func[next_state][next_action]
-                    self._q_func[state][action] += self._alpha * (target - self._q_func[state][action])
+                    next_action = np.argmax(self._get_action_values(next_state))
+                    target = reward + self._gamma * self._get_q_value(next_state, next_action)
+                    err = target - self._get_q_value(state, action)
+                    self._update_q_value(state, action, err)
 
                     state = next_state
 
@@ -83,3 +85,18 @@ class QLearning:
             return self._env.action_space.sample()
         else:
             return np.argmax(self._q_func[state])
+
+    def _get_q_value(self, state, action):
+        return self._get_action_values(state)[action]
+
+    def _update_q_value(self, state, action, err):
+        self._get_action_values(state)[action] += self._alpha * err
+
+    def _set_q_value(self, state, action, value):
+        self._get_action_values(state)[action] = value
+
+    def _get_action_values(self, state):
+        try:
+            return self._q_func[state]
+        except TypeError:
+            print(QLearning._unhashable_error_texts)
