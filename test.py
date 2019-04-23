@@ -1,4 +1,4 @@
-from qlearning import QLearning
+from q_learning import QLearning
 import gym
 
 

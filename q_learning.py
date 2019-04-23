@@ -1,5 +1,5 @@
 from collections import defaultdict
-from utils.logger import Logger
+from logger import Logger
 
 import numpy as np
 import random
