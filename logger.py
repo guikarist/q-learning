@@ -28,8 +28,12 @@ class Logger:
 
     def _update_reward(self):
         # TODO: OPTIMIZATION
-        self._max_reward = max(self._rewards)
-        self._avg_reward = sum(self._rewards) / len(self._rewards)
+        if len(self._rewards) == 0:
+            self._max_reward = None
+            self._avg_reward = None
+        else:
+            self._max_reward = max(self._rewards)
+            self._avg_reward = sum(self._rewards) / len(self._rewards)
         self._update_postfix()
 
     def _update_postfix(self):

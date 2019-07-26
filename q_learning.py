@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, Hashable
 from logger import Logger
 
 import numpy as np
@@ -8,7 +8,7 @@ import random
 class QLearning:
     _unhashable_error_texts = 'The state must be hashable.'
 
-    def __init__(self, env, epsilon, gamma, alpha, log_frequency=100):
+    def __init__(self, env, epsilon, gamma, alpha, log_frequency=100, state_wrapper=None):
         """
         Initialization
         :param env: A initialized gym (or gym-like) environment.
@@ -16,17 +16,19 @@ class QLearning:
         :param gamma: Discounted factor
         :param alpha: Learning rate
         :param log_frequency: The frequency of logging
+        :param state_wrapper: The wrapper function which converts unhashable state to a hashable one
         """
         self._env = env
         self._epsilon = epsilon
         self._gamma = gamma
         self._alpha = alpha
         self._log_frequency = log_frequency
+        self._state_wrapper = (lambda x: x) if state_wrapper is None else state_wrapper
 
         # Initialize Q function.
         self._q_func = defaultdict(lambda: np.zeros(self._env.action_space.n))
 
-    def train(self, num_steps):
+    def train(self, num_steps, render=False):
         rewards = []
 
         with Logger(num_steps, self._log_frequency, rewards) as logger:
@@ -34,14 +36,19 @@ class QLearning:
 
             while step_count < num_steps:
                 state = self._env.reset()
+                state = self._state_wrapper(state)
 
                 reward_sum = 0  # Sum of reward in an episode
                 while True:
+                    if render:
+                        self._env.render()
+
                     step_count += 1
 
                     # Select action using epsilon greedy policy.
                     action = self._policy(state)
                     next_state, reward, done, _ = self._env.step(action)
+                    next_state = self._state_wrapper(next_state)
                     reward_sum += reward
 
                     # Update Q Function using TD target.
@@ -65,6 +72,7 @@ class QLearning:
 
         for _ in range(num_episodes):
             state = self._env.reset()
+            state = self._state_wrapper(state)
             done = False
 
             reward_sum = 0
@@ -74,6 +82,7 @@ class QLearning:
 
                 action = np.argmax(self._q_func[state])
                 state, reward, done, _ = self._env.step(action)
+                state = self._state_wrapper(state)
                 reward_sum += reward
 
             rewards.append(reward_sum)
