@@ -1,4 +1,4 @@
-from collections import defaultdict, Hashable
+from collections import defaultdict
 from logger import Logger
 
 import numpy as np
