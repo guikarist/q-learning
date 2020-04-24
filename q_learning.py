@@ -29,56 +29,56 @@ class QLearning:
         :param done_filter: The function which filters done flag of 'env' for QLearning algorithm
         """
 
-        self._env = env
-        self._epsilon = epsilon
-        self._gamma = gamma
-        self._alpha = alpha
-        self._log_frequency = log_frequency
-        self._state_wrapper = (lambda x: x) if state_filter is None else state_filter
-        self._action_filter = (lambda x: x) if action_filter is None else action_filter
-        self._reward_filter = (lambda x: x) if reward_filter is None else reward_filter
-        self._done_filter = (lambda x: x) if done_filter is None else done_filter
+        self.env = env
+        self.epsilon = epsilon
+        self.gamma = gamma
+        self.alpha = alpha
+        self.log_frequency = log_frequency
+        self.state_wrapper = (lambda x: x) if state_filter is None else state_filter
+        self.action_filter = (lambda x: x) if action_filter is None else action_filter
+        self.reward_filter = (lambda x: x) if reward_filter is None else reward_filter
+        self.done_filter = (lambda x: x) if done_filter is None else done_filter
 
         # Initialize Q function.
-        self._q_func = defaultdict(lambda: random.random(self._env.action_space.n))
+        self._q_func = defaultdict(lambda: random.random(self.env.action_space.n))
 
     def train(self, num_steps, render=False):
         rewards = []
 
-        with Logger(num_steps, self._log_frequency, rewards) as logger:
+        with Logger(num_steps, self.log_frequency, rewards) as logger:
             step_count = 0
 
             while step_count < num_steps:
-                state = self._env.reset()
-                state = self._state_wrapper(state)
+                state = self.env.reset()
+                state = self.state_wrapper(state)
 
                 reward_sum = 0  # Sum of reward in an episode
                 while True:
                     if render:
-                        self._env.render()
+                        self.env.render()
 
                     step_count += 1
 
                     # Select action using epsilon greedy policy.
                     action = self._policy(state)
-                    next_state, reward, done, _ = self._env.step(self._action_filter(action))
-                    next_state = self._state_wrapper(next_state)
-                    reward = self._reward_filter(reward)
-                    done = self._done_filter(done)
+                    next_state, reward, done, _ = self.env.step(self.action_filter(action))
+                    next_state = self.state_wrapper(next_state)
+                    reward = self.reward_filter(reward)
+                    done = self.done_filter(done)
 
                     reward_sum += reward
 
                     # Update Q Function using TD target.
                     next_action = np.argmax(self._get_action_values(next_state))
-                    target = reward + self._gamma * self._get_q_value(next_state, next_action)
+                    target = reward + self.gamma * self._get_q_value(next_state, next_action)
                     err = target - self._get_q_value(state, action)
                     self._update_q_value(state, action, err)
 
                     state = next_state
 
                     # Logging
-                    if step_count % self._log_frequency == 0:
-                        logger.update(self._log_frequency)
+                    if step_count % self.log_frequency == 0:
+                        logger.update(self.log_frequency)
 
                     if done or step_count >= num_steps:
                         break
@@ -88,21 +88,21 @@ class QLearning:
         rewards = []
 
         for _ in range(num_episodes):
-            state = self._env.reset()
-            state = self._state_wrapper(state)
+            state = self.env.reset()
+            state = self.state_wrapper(state)
             done = False
 
             reward_sum = 0
             while not done:
                 if render:
-                    self._env.render()
+                    self.env.render()
 
                 action = np.argmax(self._q_func[state])
-                state, reward, done, _ = self._env.step(self._action_filter(action))
-                reward = self._reward_filter(reward)
-                done = self._done_filter(done)
+                state, reward, done, _ = self.env.step(self.action_filter(action))
+                reward = self.reward_filter(reward)
+                done = self.done_filter(done)
 
-                state = self._state_wrapper(state)
+                state = self.state_wrapper(state)
                 reward_sum += reward
 
             rewards.append(reward_sum)
@@ -110,8 +110,8 @@ class QLearning:
         print('Avg Reward: %.2f' % (sum(rewards) / len(rewards)))
 
     def _policy(self, state):
-        if random.random() < self._epsilon:
-            return self._env.action_space.sample()
+        if random.random() < self.epsilon:
+            return self.env.action_space.sample()
         else:
             return np.argmax(self._q_func[state])
 
@@ -119,7 +119,7 @@ class QLearning:
         return self._get_action_values(state)[action]
 
     def _update_q_value(self, state, action, err):
-        self._get_action_values(state)[action] += self._alpha * err
+        self._get_action_values(state)[action] += self.alpha * err
 
     def _set_q_value(self, state, action, value):
         self._get_action_values(state)[action] = value
