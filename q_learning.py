@@ -107,7 +107,7 @@ class QLearning:
 
             rewards.append(reward_sum)
 
-        print('Avg Reward: %.2f' % (sum(rewards) / len(rewards)))
+        print(f'Avg Reward: {(sum(rewards) / len(rewards)):.2f}')
 
     def _policy(self, state):
         if random.random() < self.epsilon:
