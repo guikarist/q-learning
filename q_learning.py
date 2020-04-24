@@ -1,8 +1,8 @@
 from collections import defaultdict
 from logger import Logger
+from numpy import random
 
 import numpy as np
-import random
 
 
 class QLearning:
@@ -40,7 +40,7 @@ class QLearning:
         self._done_filter = (lambda x: x) if done_filter is None else done_filter
 
         # Initialize Q function.
-        self._q_func = defaultdict(lambda: np.zeros(self._env.action_space.n))
+        self._q_func = defaultdict(lambda: random.random(self._env.action_space.n))
 
     def train(self, num_steps, render=False):
         rewards = []
