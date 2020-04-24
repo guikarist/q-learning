@@ -48,6 +48,11 @@ class QLearning:
         self._q_func = defaultdict(lambda: random.random(self.env.action_space.n))
 
     def train(self, num_steps, render=False):
+        """
+        Train
+        :param num_steps: Number of steps to train
+        :param render: Whether to render the game during test
+        """
         rewards = []
 
         with Logger(num_steps, self.log_frequency, rewards) as logger:
