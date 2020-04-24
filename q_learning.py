@@ -90,6 +90,12 @@ class QLearning:
                 rewards.append(reward_sum)
 
     def test(self, num_episodes, render=True):
+        """
+        Test trained Q value function
+        :param num_episodes: Number of episodes to test
+        :param render: Whether to render the game during test
+        :return: Average return through all episodes
+        """
         rewards = []
 
         for _ in range(num_episodes):
@@ -112,7 +118,8 @@ class QLearning:
 
             rewards.append(reward_sum)
 
-        print(f'Avg Reward: {(sum(rewards) / len(rewards)):.2f}')
+        print(f'Avg Reward: {sum(rewards) / len(rewards):.2f}')
+        return sum(rewards) / len(rewards)
 
     def _policy(self, state):
         if random.random() < self.epsilon:
