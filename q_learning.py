@@ -6,8 +6,6 @@ import numpy as np
 
 
 class QLearning:
-    _unhashable_error_texts = "The state must be hashable, please use 'state_filter' in QLearning.__init__"
-
     def __init__(self, env, epsilon, gamma, alpha, log_frequency=100, state_filter=None, action_filter=None,
                  reward_filter=None, done_filter=None):
         """
@@ -147,4 +145,4 @@ class QLearning:
 
             return self._q_func[state]
         except TypeError:
-            print(QLearning._unhashable_error_texts)
+            raise TypeError("The state must be hashable, please use 'state_filter' in QLearning.__init__")
