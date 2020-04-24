@@ -13,7 +13,14 @@ class QLearning:
         """
         Initialization
         1. The 'env' should be gym-like.
-        2. The state of 'env' should be hashable.
+        2. The state of 'env' should be one of the following types:
+            a. A hashable object
+            b. A dict which contains 'state' key and 'action_mask' key
+                'action_mask' is a mask for valid actions with 'env.action_space.n' length.
+                {
+                    'state': state # A hashable object
+                    'action_mask': action_mask # type: np.ndarray[bool]
+                }
         3. The action of 'env' should be consistent with 'env.action_space.sample()'.
         4. The reward of 'env' should be numeric type.
         5. The done flag of 'env' should be bool type.
@@ -97,7 +104,7 @@ class QLearning:
                 if render:
                     self.env.render()
 
-                action = np.argmax(self._q_func[state])
+                action = np.argmax(self._get_action_values(state))
                 state, reward, done, _ = self.env.step(self.action_filter(action))
                 reward = self.reward_filter(reward)
                 done = self.done_filter(done)
@@ -111,9 +118,13 @@ class QLearning:
 
     def _policy(self, state):
         if random.random() < self.epsilon:
+            if isinstance(state, dict):
+                valid_actions = np.argwhere(state['action_mask'].astype(bool))
+                return random.choice(valid_actions.reshape(-1))
+
             return self.env.action_space.sample()
         else:
-            return np.argmax(self._q_func[state])
+            return np.argmax(self._get_action_values(state))
 
     def _get_q_value(self, state, action):
         return self._get_action_values(state)[action]
@@ -125,7 +136,15 @@ class QLearning:
         self._get_action_values(state)[action] = value
 
     def _get_action_values(self, state):
+        action_mask = None
+        if isinstance(state, dict):
+            action_mask = state['action_mask']
+            state = state['state']
+
         try:
+            if action_mask is not None and state not in self._q_func:
+                self._q_func[state][~action_mask] = -np.inf
+
             return self._q_func[state]
         except TypeError:
             print(QLearning._unhashable_error_texts)
